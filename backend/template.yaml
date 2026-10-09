@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AeroShift Backend - Exposure-aware route comparison system
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: amazon.titan-text-lite-v1
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'OPTIONS,POST,GET'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.11
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref StationCacheTable
+        LOG_LEVEL: INFO
+        ROUTING_BASE_URL: https://router.project-osrm.org
+        # OPENAQ_API_KEY: "your_key_here"
+
+Resources:
+  StationCacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: StationCache
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: station_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: station_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  StationIngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: ingest_stations.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StationCacheTable
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+
+  RouteEngineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: route_engine.lambda_handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref StationCacheTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /routes
+            Method: post
+
+  RouteExplainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: route_explain.lambda_handler
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /routes/explain
+            Method: post
+
+  ShieldAdvisoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: shield_handler.lambda_handler
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /shield/advisory
+            Method: post
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway base endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"

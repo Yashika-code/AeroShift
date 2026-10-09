@@ -1,0 +1,9 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "aeroshift-backend"
+resolve_s3 = true
+s3_prefix = "aeroshift-backend"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
