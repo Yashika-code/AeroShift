@@ -12,16 +12,17 @@ interface MapViewProps {
 }
 
 const COLORS: Record<string, string> = {
-  fastest: '#EF4444', 
-  balanced: '#10B981', 
-  cleanest: '#1a73e8', // Google Blue
+  fastest: '#EF4444', // Red
+  balanced: '#2563EB', // Blue
+  cleanest: '#10B981', // Green
 };
 
 const STROKE_COLORS: Record<string, string> = {
-  fastest: '#B91C1C', 
-  balanced: '#047857', 
-  cleanest: '#1557b0', 
+  fastest: '#B91C1C', // Dark Red
+  balanced: '#1D4ED8', // Dark Blue
+  cleanest: '#047857', // Dark Green
 };
+
 
 // Helper to decode OSRM polyline strings
 const decodePolyline = (str: string) => {
@@ -43,9 +44,21 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
 
   const handleStartJourney = () => {
     if (!data?.request || !selectedRouteData) return;
-    const { origin, destination } = data.request;
+    const { origin, destination, mode } = data.request;
     
-    // Extract a few waypoints from the selected route to force Google Maps to take this exact path
+    // Map mode to Google Maps travelmode
+    // 'car' -> 'driving', 'two_wheeler' -> 'bicycling' (or 'driving'), 'active' -> 'bicycling' (or 'walking')
+    // In India/Google Maps dir API: 'driving', 'bicycling', 'walking', 'transit', or two-wheeler mode
+    let travelmode = 'driving';
+    if (mode === 'two_wheeler') {
+      travelmode = 'two_wheeler';
+    } else if (mode === 'active') {
+      travelmode = 'bicycling';
+    } else {
+      travelmode = 'driving';
+    }
+    
+    // Extract a few waypoints from the selected route to force navigation to follow this exact route
     let waypointsStr = '';
     let coords: number[][] = [];
     if (typeof selectedRouteData.geometry === 'string') {
@@ -69,14 +82,15 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
       const wp3 = coords[step * 3];
       waypointsStr = `&waypoints=${wp1[1]},${wp1[0]}|${wp2[1]},${wp2[0]}|${wp3[1]},${wp3[0]}`;
     } else if (coords.length > 2) {
-      // For demo routes that only have a single intermediate point
+      // For demo routes that only have intermediate points
       const wp1 = coords[1];
       waypointsStr = `&waypoints=${wp1[1]},${wp1[0]}`;
     }
 
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${origin[0]},${origin[1]}&destination=${destination[0]},${destination[1]}${waypointsStr}&travelmode=driving`;
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${origin[0]},${origin[1]}&destination=${destination[0]},${destination[1]}${waypointsStr}&travelmode=${travelmode}`;
     window.open(url, '_blank');
   };
+
 
   // Determine bounds
   const bounds = React.useMemo(() => {

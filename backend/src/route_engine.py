@@ -4,7 +4,7 @@ from routing_client import RoutingClient
 from station_repository import StationRepository
 from idw import calculate_idw
 from exposure_model import estimate_inhaled_mass
-from pareto import filter_dominated_routes, select_balanced_route
+from pareto import select_strategy_routes
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -24,8 +24,29 @@ def lambda_handler(event, context):
         
         stations = repo.get_recent_stations()
         
-        # Get routes
+        # Get direct routes from OSRM
         raw_routes = routing_client.get_routes(origin[0], origin[1], destination[0], destination[1], mode)
+        
+        # If OSRM returns fewer than 3 alternatives, generate alternative corridors using orthogonal midpoints
+        if len(raw_routes) < 3:
+            mid_lat = (origin[0] + destination[0]) / 2.0
+            mid_lon = (origin[1] + destination[1]) / 2.0
+            d_lat = destination[0] - origin[0]
+            d_lon = destination[1] - origin[1]
+
+            offsets = [
+                (mid_lat - d_lon * 0.18, mid_lon + d_lat * 0.18),
+                (mid_lat + d_lon * 0.18, mid_lon - d_lat * 0.18)
+            ]
+            
+            for w_lat, w_lon in offsets:
+                via_routes = routing_client.get_routes(
+                    origin[0], origin[1], destination[0], destination[1], mode, via_points=[(w_lat, w_lon)]
+                )
+                if via_routes:
+                    raw_routes.append(via_routes[0])
+                if len(raw_routes) >= 4:
+                    break
         
         processed_routes = []
         for r in raw_routes:
@@ -57,16 +78,12 @@ def lambda_handler(event, context):
                 'geometry': r['geometry']
             })
             
-        # Pareto filter
-        non_dominated = filter_dominated_routes(processed_routes)
-        
-        if not non_dominated:
-            non_dominated = processed_routes # Fallback if everything is dominated (shouldn't happen)
-            
-        # Select Fastest, Cleanest, Balanced
-        fastest = min(non_dominated, key=lambda x: x['duration_min'])
-        cleanest = min(non_dominated, key=lambda x: x['inhaled_mass_ug'])
-        balanced = select_balanced_route(non_dominated)
+        # Strategy-based ranking and selection (Fastest, Cleanest, Balanced)
+        selected_routes = select_strategy_routes(processed_routes)
+        fastest = selected_routes['fastest']
+        balanced = selected_routes['balanced']
+        cleanest = selected_routes['cleanest']
+
         
         response = {
             "request": {

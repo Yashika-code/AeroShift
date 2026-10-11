@@ -16,11 +16,12 @@ export default function RouteCards({ data, selectedRoute, onSelect }: { data: Ro
 
     const isBalanced = id === 'balanced';
 
-    const colorStyles: Record<string, any> = {
-      coral: { border: 'border-coral-500', bg: 'bg-coral-50/60', text: 'text-coral-700' },
-      emerald: { border: 'border-emerald-500', bg: 'bg-emerald-50/60', text: 'text-emerald-700' },
-      teal: { border: 'border-teal-500', bg: 'bg-teal-50/60', text: 'text-teal-700' }
+    const colorStyles: Record<string, { border: string; bg: string; text: string; badge: string }> = {
+      coral: { border: 'border-red-500', bg: 'bg-red-50/60', text: 'text-red-700', badge: 'bg-red-600' },
+      emerald: { border: 'border-blue-500', bg: 'bg-blue-50/60', text: 'text-blue-700', badge: 'bg-blue-600' },
+      teal: { border: 'border-emerald-500', bg: 'bg-emerald-50/60', text: 'text-emerald-700', badge: 'bg-emerald-600' }
     };
+
 
     const c = colorStyles[colorClass];
 
@@ -32,10 +33,11 @@ export default function RouteCards({ data, selectedRoute, onSelect }: { data: Ro
           ${isSelected ? `${c.border} ${c.bg} shadow-md scale-[1.02]` : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'}`}
       >
         {isBalanced && isSelected && (
-          <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-bl-xl shadow-sm">
+          <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-bl-xl shadow-sm">
             Best Trade-off
           </div>
         )}
+
 
         <div className="flex items-center space-x-3 mb-4">
           <div className={`p-2 rounded-full ${isSelected ? 'bg-white shadow-sm' : 'bg-slate-100'} transition-colors`}>
@@ -69,7 +71,7 @@ export default function RouteCards({ data, selectedRoute, onSelect }: { data: Ro
                 <div className="flex items-center text-xs font-semibold">
                    <div className="w-12 text-slate-400">TIME</div>
                    <div className="flex-1 flex items-center px-3">
-                     <span className="text-coral-600">{Math.round(fastest.duration_min)}m</span>
+                     <span className="text-red-600">{Math.round(fastest.duration_min)}m</span>
                      <div className="flex-1 h-px bg-slate-300 mx-3 relative">
                        <div className="absolute right-0 -top-1 w-2 h-2 border-t border-r border-slate-400 rotate-45"></div>
                      </div>
@@ -81,7 +83,7 @@ export default function RouteCards({ data, selectedRoute, onSelect }: { data: Ro
                 <div className="flex items-center text-xs font-semibold">
                    <div className="w-12 text-slate-400">PM2.5</div>
                    <div className="flex-1 flex items-center px-3">
-                     <span className="text-coral-600">{fastest.inhaled_mass_ug.toFixed(1)}µg</span>
+                     <span className="text-red-600">{fastest.inhaled_mass_ug.toFixed(1)}µg</span>
                      <div className="flex-1 h-px bg-emerald-300 mx-3 relative">
                         <div className="absolute right-0 -top-1 w-2 h-2 border-t border-r border-emerald-500 rotate-45"></div>
                      </div>
@@ -97,9 +99,10 @@ export default function RouteCards({ data, selectedRoute, onSelect }: { data: Ro
 
   return (
     <div className="space-y-4">
-      {renderCard('fastest', 'Fastest', fastest, <Zap className="w-5 h-5 text-coral-500" />, 'coral', true)}
-      {renderCard('balanced', 'Balanced', balanced, <ShieldCheck className="w-5 h-5 text-emerald-500" />, 'emerald', false)}
-      {renderCard('cleanest', 'Cleanest', cleanest, <Leaf className="w-5 h-5 text-teal-500" />, 'teal', false)}
+      {renderCard('fastest', 'Fastest', fastest, <Zap className="w-5 h-5 text-red-500" />, 'coral', true)}
+      {renderCard('balanced', 'Balanced', balanced, <ShieldCheck className="w-5 h-5 text-blue-500" />, 'emerald', false)}
+      {renderCard('cleanest', 'Cleanest', cleanest, <Leaf className="w-5 h-5 text-emerald-500" />, 'teal', false)}
     </div>
   );
+
 }

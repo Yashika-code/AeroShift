@@ -5,6 +5,11 @@ const apiUrl = process.env.AEROSHIFT_API_URL;
 
 // Generate dummy demo data matching the contract
 function getDemoData(origin: [number, number], destination: [number, number], mode: string): RoutesResponse {
+  // Vehicle mode multipliers consistent with backend exposure model:
+  // car: 0.7, two_wheeler: 1.3, active: 2.2
+  const modeMultiplier = mode === 'active' ? 2.2 : mode === 'two_wheeler' ? 1.3 : 0.7;
+  const baseMass = 40.2 / 0.7; // base mass normalized
+
   return {
     request: { origin, destination, mode: mode as unknown as Mode },
 
@@ -12,22 +17,23 @@ function getDemoData(origin: [number, number], destination: [number, number], mo
       fastest: {
         duration_min: 30.5,
         distance_km: 12.0,
-        inhaled_mass_ug: 40.2,
+        inhaled_mass_ug: Number((baseMass * modeMultiplier * 0.7).toFixed(1)),
         geometry: { type: 'LineString', coordinates: [[origin[1], origin[0]], [destination[1], destination[0]]] }
       },
       balanced: {
         duration_min: 35.0,
         distance_km: 13.5,
-        inhaled_mass_ug: 25.1, // significant drop
+        inhaled_mass_ug: Number(((baseMass * 0.62) * modeMultiplier * 0.7).toFixed(1)), // significant drop
         geometry: { type: 'LineString', coordinates: [[origin[1], origin[0]], [(origin[1]+destination[1])/2, origin[0]], [destination[1], destination[0]]] }
       },
       cleanest: {
         duration_min: 45.0,
         distance_km: 15.0,
-        inhaled_mass_ug: 22.0,
+        inhaled_mass_ug: Number(((baseMass * 0.54) * modeMultiplier * 0.7).toFixed(1)),
         geometry: { type: 'LineString', coordinates: [[origin[1], origin[0]], [origin[1], destination[0]], [destination[1], destination[0]]] }
       }
     },
+
     metadata: {
       station_count: 5,
       model: "IDW",

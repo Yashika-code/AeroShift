@@ -1,5 +1,5 @@
 import pytest
-from pareto import filter_dominated_routes, select_balanced_route
+from pareto import filter_dominated_routes, select_balanced_route, select_strategy_routes
 
 def test_pareto_domination():
     routes = [
@@ -40,3 +40,28 @@ def test_fastest_cleanest_selection_logic():
     
     assert fastest['duration_min'] == 30
     assert cleanest['inhaled_mass_ug'] == 10
+
+def test_select_strategy_routes_distinct():
+    candidates = [
+        {'duration_min': 28.5, 'distance_km': 22.0, 'inhaled_mass_ug': 35.0, 'id': 'route_fast'},
+        {'duration_min': 32.0, 'distance_km': 23.5, 'inhaled_mass_ug': 25.0, 'id': 'route_balanced'},
+        {'duration_min': 36.0, 'distance_km': 25.0, 'inhaled_mass_ug': 18.0, 'id': 'route_cleanest'}
+    ]
+    res = select_strategy_routes(candidates)
+    assert res['fastest']['id'] == 'route_fast'
+    assert res['cleanest']['id'] == 'route_cleanest'
+    assert res['balanced']['id'] == 'route_balanced'
+
+def test_select_strategy_routes_with_dominated_candidate():
+    # Candidate B is slightly slower and has higher mass than A, but candidate C offers a genuine detour
+    candidates = [
+        {'duration_min': 28.0, 'distance_km': 20.0, 'inhaled_mass_ug': 30.0, 'id': 'route_1'},
+        {'duration_min': 30.0, 'distance_km': 21.0, 'inhaled_mass_ug': 32.0, 'id': 'route_2'},
+        {'duration_min': 34.0, 'distance_km': 24.0, 'inhaled_mass_ug': 20.0, 'id': 'route_3'}
+    ]
+    res = select_strategy_routes(candidates)
+    assert res['fastest']['id'] == 'route_1'
+    assert res['cleanest']['id'] == 'route_3'
+    # All 3 strategies receive valid route mappings
+    assert res['balanced'] is not None
+

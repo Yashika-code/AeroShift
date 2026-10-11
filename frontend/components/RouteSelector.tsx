@@ -23,6 +23,14 @@ export default function RouteSelector({ onSearch }: RouteSelectorProps) {
     onSearch(preset.origin, preset.destination, mode);
   };
 
+  const handleModeChange = (newMode: Mode) => {
+    setMode(newMode);
+    if (activePreset !== null) {
+      const preset = PRESETS[activePreset];
+      onSearch(preset.origin, preset.destination, newMode);
+    }
+  };
+
   const originText = activePreset !== null ? PRESETS[activePreset].name.split(' to ')[0] : 'Choose a suggested route below';
   const destText = activePreset !== null ? PRESETS[activePreset].name.split(' to ')[1] : '...';
 
@@ -35,16 +43,17 @@ export default function RouteSelector({ onSearch }: RouteSelectorProps) {
 
       {/* Modes */}
       <div className="flex p-1 bg-slate-100/80 rounded-xl mb-6">
-        <button onClick={() => setMode('two_wheeler')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'two_wheeler' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+        <button onClick={() => handleModeChange('two_wheeler')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'two_wheeler' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
           <Bike className="w-4 h-4 mr-2" /> Two-wheeler
         </button>
-        <button onClick={() => setMode('car')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'car' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+        <button onClick={() => handleModeChange('car')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'car' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
           <Car className="w-4 h-4 mr-2" /> Car
         </button>
-        <button onClick={() => setMode('active')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'active' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+        <button onClick={() => handleModeChange('active')} className={`flex-1 flex justify-center items-center py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mode === 'active' ? 'bg-white shadow-sm text-slate-900 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
           <Footprints className="w-4 h-4 mr-2" /> Active
         </button>
       </div>
+
 
       <div className="space-y-3 relative mb-8">
         <div className="absolute left-4 top-5 bottom-5 w-[2px] bg-slate-200 z-0 flex flex-col justify-between items-center py-1">
