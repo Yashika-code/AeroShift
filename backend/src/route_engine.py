@@ -84,6 +84,13 @@ def lambda_handler(event, context):
         balanced = selected_routes['balanced']
         cleanest = selected_routes['cleanest']
 
+        logger.info(
+            f"[ROUTING_DIAGNOSTIC] Origin={origin} Destination={destination} Mode={mode} Candidates={len(processed_routes)} "
+            f"| Fastest: duration_sec={fastest['duration_min']*60:.1f}s ({fastest['duration_min']:.1f}m), dist={fastest['distance_km']:.2f}km "
+            f"| Balanced: duration_sec={balanced['duration_min']*60:.1f}s ({balanced['duration_min']:.1f}m), dist={balanced['distance_km']:.2f}km "
+            f"| Cleanest: duration_sec={cleanest['duration_min']*60:.1f}s ({cleanest['duration_min']:.1f}m), dist={cleanest['distance_km']:.2f}km"
+        )
+
         
         response = {
             "request": {

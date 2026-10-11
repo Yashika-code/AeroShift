@@ -64,6 +64,12 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+    if (data?.routes) {
+      console.log(`[FRONTEND_ROUTE_DIAGNOSTIC] Mode: ${body.mode} | Origin: ${JSON.stringify(body.origin)} -> Dest: ${JSON.stringify(body.destination)}`);
+      for (const [strategy, r] of Object.entries(data.routes as Record<string, { duration_min: number; distance_km: number }>)) {
+        console.log(`  [${strategy.toUpperCase()}] Distance: ${r.distance_km} km | Raw Duration: ${(r.duration_min * 60).toFixed(1)}s | Display ETA: ${Math.round(r.duration_min)} min (${r.duration_min.toFixed(2)}m)`);
+      }
+    }
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
