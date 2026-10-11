@@ -6,7 +6,11 @@ Description: >
 Parameters:
   BedrockModelId:
     Type: String
-    Default: amazon.titan-text-lite-v1
+    Default: amazon.nova-lite-v1:0
+  OpenAQApiKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAQ API key
 
 Globals:
   Api:
@@ -23,7 +27,7 @@ Globals:
         TABLE_NAME: !Ref StationCacheTable
         LOG_LEVEL: INFO
         ROUTING_BASE_URL: https://router.project-osrm.org
-        # OPENAQ_API_KEY: "your_key_here"
+        OPENAQ_API_KEY: !Ref OpenAQApiKey
 
 Resources:
   StationCacheTable:

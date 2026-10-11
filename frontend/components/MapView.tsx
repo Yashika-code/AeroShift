@@ -51,13 +51,13 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
     if (typeof selectedRouteData.geometry === 'string') {
         coords = decodePolyline(selectedRouteData.geometry);
     } else if (Array.isArray(selectedRouteData.geometry)) {
-        coords = selectedRouteData.geometry as number[][];
+        coords = selectedRouteData.geometry as unknown as unknown as number[][];
     } else if (selectedRouteData.geometry && Array.isArray(selectedRouteData.geometry.coordinates)) {
-        coords = selectedRouteData.geometry.coordinates as number[][];
+        coords = selectedRouteData.geometry.coordinates as unknown as number[][];
     }
     
     if (coords.length > 0 && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-        coords = coords.flat() as number[][];
+        coords = coords.flat() as unknown as number[][];
     }
     coords = coords.map(c => [Number(c[0]), Number(c[1])]).filter(c => !isNaN(c[0]) && !isNaN(c[1]));
 
@@ -86,9 +86,9 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
     if (typeof route.geometry === 'string') {
         coords = decodePolyline(route.geometry);
     } else if (Array.isArray(route.geometry)) {
-        coords = route.geometry as number[][];
+        coords = route.geometry as unknown as unknown as number[][];
     } else if (route.geometry && Array.isArray(route.geometry.coordinates)) {
-        coords = route.geometry.coordinates as number[][];
+        coords = route.geometry.coordinates as unknown as number[][];
     }
     
     if (coords.length > 1) {
@@ -136,14 +136,14 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
           if (typeof route.geometry === 'string') {
               coords = decodePolyline(route.geometry);
           } else if (Array.isArray(route.geometry)) {
-              coords = route.geometry as number[][];
+              coords = route.geometry as unknown as unknown as number[][];
           } else if (route.geometry && Array.isArray(route.geometry.coordinates)) {
-              coords = route.geometry.coordinates as number[][];
+              coords = route.geometry.coordinates as unknown as number[][];
           }
 
           // Flatten and sanitize
           if (coords.length > 0 && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-              coords = coords.flat() as number[][];
+              coords = coords.flat() as unknown as number[][];
           }
           coords = coords.map(c => [Number(c[0]), Number(c[1])]).filter(c => !isNaN(c[0]) && !isNaN(c[1]));
 
@@ -192,11 +192,11 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
           if (typeof selectedRouteData.geometry === 'string') {
               coords = decodePolyline(selectedRouteData.geometry);
           } else if (Array.isArray(selectedRouteData.geometry)) {
-              coords = selectedRouteData.geometry as number[][];
+              coords = selectedRouteData.geometry as unknown as unknown as number[][];
           } else if (selectedRouteData.geometry && Array.isArray(selectedRouteData.geometry.coordinates)) {
-              coords = selectedRouteData.geometry.coordinates as number[][];
+              coords = selectedRouteData.geometry.coordinates as unknown as number[][];
           }
-          if (coords.length > 0 && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) coords = coords.flat() as number[][];
+          if (coords.length > 0 && Array.isArray(coords[0]) && Array.isArray(coords[0][0])) coords = coords.flat() as unknown as number[][];
           coords = coords.map(c => [Number(c[0]), Number(c[1])]).filter(c => !isNaN(c[0]) && !isNaN(c[1]));
 
           if (coords.length < 2) return null;
@@ -231,3 +231,4 @@ export default function MapView({ data, selectedRoute }: MapViewProps) {
     </div>
   );
 }
+
