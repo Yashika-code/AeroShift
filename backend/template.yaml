@@ -108,11 +108,14 @@ Resources:
         Variables:
           BEDROCK_MODEL_ID: !Ref BedrockModelId
       Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref StationCacheTable
         - Statement:
             - Effect: Allow
               Action:
                 - bedrock:InvokeModel
               Resource: "*"
+
       Events:
         ApiEvent:
           Type: Api

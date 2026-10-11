@@ -80,12 +80,38 @@ def generate_shield_advisory(facility_name, latest_pm25, max_pm25, min_pm25, tre
         start_idx = result.find('{')
         end_idx = result.rfind('}') + 1
         if start_idx != -1 and end_idx != -1:
-            return json.loads(result[start_idx:end_idx])
-        return json.loads(result)
-    except:
-        return {
-            "risk_level": "Unknown",
-            "observed_window": "Recent",
-            "recommended_actions": ["Parse error for generated advisory."],
-            "basis": "Based on recent monitoring observations supplied to the system."
-        }
+            parsed = json.loads(result[start_idx:end_idx])
+            if "risk_level" in parsed and "recommended_actions" in parsed:
+                return parsed
+    except Exception:
+        pass
+
+    # Deterministic fallback based on PM2.5 threshold guidance
+    if latest_pm25 > 150:
+        risk_level = "High"
+        actions = [
+            "Suspend intense outdoor activities and sports events.",
+            "Operate indoor HEPA air purification at high filtration capacity.",
+            "Seal doors and windows to minimize ambient infiltration."
+        ]
+    elif latest_pm25 > 60:
+        risk_level = "Medium"
+        actions = [
+            "Encourage sensitive individuals to take frequent indoor breaks.",
+            "Maintain ventilation filtration and verify indoor air quality.",
+            "Monitor regional PM2.5 trend direction across shifts."
+        ]
+    else:
+        risk_level = "Low"
+        actions = [
+            "Normal outdoor and indoor operations may proceed.",
+            "Continue standard monitoring protocols."
+        ]
+
+    return {
+        "risk_level": risk_level,
+        "observed_window": "Recent observations",
+        "recommended_actions": actions,
+        "basis": f"Derived from recent regional monitoring observations (latest observed: {latest_pm25} µg/m³)."
+    }
+

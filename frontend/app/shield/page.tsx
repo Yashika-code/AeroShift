@@ -122,22 +122,25 @@ export default function ShieldPage() {
                     <ShieldAlert className="w-4 h-4 mr-2" />
                     Operational Advisory
                   </h3>
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide shadow-sm ${data.advisory.risk_level === 'High' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'}`}>
-                    {data.advisory.risk_level} RISK
+                  <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide shadow-sm ${data.advisory?.risk_level === 'High' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'}`}>
+                    {data.advisory?.risk_level || 'Advisory'} RISK
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div>
                     <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">OBSERVED</h4>
-                    <p className="text-sm text-indigo-900 font-semibold mb-2">{data.advisory.observed_window}</p>
-                    <p className="text-sm text-indigo-800 leading-relaxed">{data.advisory.basis}</p>
+                    <p className="text-sm text-indigo-900 font-semibold mb-2">{data.advisory?.observed_window || 'Current observations'}</p>
+                    <p className="text-sm text-indigo-800 leading-relaxed">{data.advisory?.basis || 'Derived from ambient monitoring observations.'}</p>
                   </div>
                   
                   <div className="bg-white/60 p-5 rounded-2xl border border-indigo-100/50">
                     <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3">RECOMMENDED ACTIONS</h4>
                     <ul className="space-y-3">
-                      {data.advisory.recommended_actions.map((action: string, idx: number) => (
+                      {(data.advisory?.recommended_actions && data.advisory.recommended_actions.length > 0 
+                        ? data.advisory.recommended_actions 
+                        : ["Maintain standard indoor air filtration.", "Monitor localized air quality variations."]
+                      ).map((action: string, idx: number) => (
                         <li key={idx} className="flex items-start text-indigo-900 text-sm font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 mr-3 flex-shrink-0"></span>
                           <span className="leading-relaxed">{action}</span>
@@ -149,7 +152,24 @@ export default function ShieldPage() {
 
                 <div className="flex items-center justify-between mt-auto pt-6 border-t border-indigo-100/50">
                    <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-widest">AI-Generated • Not Medical Advice</p>
-                   <button className="flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-indigo-100 hover:shadow">
+                   <button 
+                     onClick={() => {
+                       const actions = (data.advisory?.recommended_actions || [
+                         "Maintain standard indoor air filtration.",
+                         "Monitor localized air quality variations."
+                       ]);
+                       const actionsList = actions.map((act: string, i: number) => `${i + 1}. ${act}`).join('\n');
+                       const report = `AeroShift Shield Advisory\nFacility: ${data.facility_name || facility}\nRisk Level: ${data.advisory?.risk_level || 'Advisory'}\nLatest PM2.5: ${data.latest_pm25 ?? 'N/A'} µg/m³\nPeak PM2.5: ${data.max_pm25 ?? 'N/A'} µg/m³\nTrend: ${data.trend_direction || 'stable'}\nBasis: ${data.advisory?.basis || 'Derived from ambient monitoring observations.'}\n\nRecommended Actions:\n${actionsList}`;
+                       const blob = new Blob([report], { type: 'text/plain' });
+                       const url = URL.createObjectURL(blob);
+                       const el = document.createElement('a');
+                       el.href = url;
+                       el.download = `aeroshift-advisory.txt`;
+                       el.click();
+                       URL.revokeObjectURL(url);
+                     }}
+                     className="flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-indigo-100 hover:shadow"
+                   >
                       <Download className="w-4 h-4 mr-2" />
                       Export Summary
                    </button>
