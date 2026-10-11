@@ -162,7 +162,7 @@ AeroShift/
 3. Configure environment variables in `frontend/.env.local`:
    ```env
    # Leave blank to use built-in offline demo mode, or point to AWS API Gateway:
-   AEROSHIFT_API_URL=https://uiv1sryt80.execute-api.us-east-1.amazonaws.com/Prod
+   AEROSHIFT_API_URL= <url>
    ```
 
 4. Start the Next.js development server:
