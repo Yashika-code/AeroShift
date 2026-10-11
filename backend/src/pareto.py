@@ -98,8 +98,10 @@ def select_strategy_routes(candidates: list) -> dict:
     by_time = sorted(unique_candidates, key=lambda x: x['duration_min'])
     by_clean = sorted(unique_candidates, key=lambda x: x['inhaled_mass_ug'])
 
-    fastest = min(non_dominated, key=lambda x: x['duration_min'])
+    # Fastest is strictly the minimum duration candidate among all generated candidates
+    fastest = min(unique_candidates, key=lambda x: x['duration_min'])
     cleanest = min(non_dominated, key=lambda x: x['inhaled_mass_ug'])
+
 
     # Balanced selection
     if len(non_dominated) >= 3:

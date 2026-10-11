@@ -38,7 +38,24 @@ def generate_route_explanation(fastest_duration, fastest_mass, balanced_duration
     Explicitly use the phrase 'modeled exposure'.
     """
     
-    return invoke_bedrock(prompt)
+    result = invoke_bedrock(prompt)
+    if not result or result == "Model invocation failed or not configured.":
+        # Deterministic fallback adhering to scientific framing
+        if percent_diff > 0:
+            return (
+                f"The balanced route takes an additional {time_diff:.1f} minutes ({balanced_duration:.0f} min total) "
+                f"while reducing modeled exposure by {percent_diff:.1f}% compared to the fastest option. "
+                f"Modeled exposure estimates are derived from nearby monitoring stations."
+            )
+        else:
+            return (
+                f"The balanced route offers an alternative corridor taking {balanced_duration:.0f} minutes with "
+                f"{balanced_mass:.1f} µg modeled exposure. "
+                f"Exposure estimates are derived from spatial interpolation of ambient air quality observations."
+            )
+            
+    return result
+
 
 def generate_shield_advisory(facility_name, latest_pm25, max_pm25, min_pm25, trend_direction):
     prompt = f"""

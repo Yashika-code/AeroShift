@@ -30,7 +30,16 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+    if (data.explanation === "Model invocation failed or not configured.") {
+      const { fastest, balanced } = body;
+      const timeDiff = (balanced.duration_min - fastest.duration_min).toFixed(1);
+      const pct = fastest.inhaled_mass_ug > 0 
+        ? (((fastest.inhaled_mass_ug - balanced.inhaled_mass_ug) / fastest.inhaled_mass_ug) * 100).toFixed(1)
+        : '0';
+      data.explanation = `The balanced route takes an additional ${timeDiff} minutes while offering modeled exposure of ${balanced.inhaled_mass_ug.toFixed(1)} µg (${pct}% change compared to the fastest route). Estimates are derived from nearby ambient monitoring stations.`;
+    }
     return NextResponse.json(data);
+
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }

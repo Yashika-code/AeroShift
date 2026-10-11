@@ -100,8 +100,10 @@ def lambda_handler(event, context):
                 "station_count": len(stations),
                 "model": "IDW",
                 "exposure_type": "estimated_ambient_pm25_inhaled_mass",
-                "disclaimer": "Exposure values are modeled ambient estimates derived from nearby monitoring stations, not direct roadside measurements."
+                "traffic_aware": False,
+                "disclaimer": "Travel times are static graph routing estimates without live congestion modeling. Exposure values are modeled ambient estimates derived from nearby monitoring stations, not direct roadside measurements."
             }
+
         }
         
         return {

@@ -130,12 +130,16 @@ export default function Home() {
 
                     <div className="space-y-3">
                       <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                        Travel times are <strong className="text-slate-700">static network graph routing estimates</strong> and do not reflect live dynamic traffic delays.
+                      </p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
                         Exposure values are <strong className="text-slate-700">modeled ambient estimates</strong> derived from nearby monitoring stations, not direct roadside measurements.
                       </p>
                       <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
                         Modeled exposure is intended for route comparison, <strong className="text-slate-700">not medical advice.</strong>
                       </p>
                     </div>
+
                   </div>
                 )}
               </div>

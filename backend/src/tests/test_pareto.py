@@ -65,3 +65,30 @@ def test_select_strategy_routes_with_dominated_candidate():
     # All 3 strategies receive valid route mappings
     assert res['balanced'] is not None
 
+def test_fastest_is_strictly_minimum_duration():
+    candidates = [
+        {'duration_min': 25.0, 'distance_km': 18.0, 'inhaled_mass_ug': 40.0, 'id': 'f'},
+        {'duration_min': 35.0, 'distance_km': 20.0, 'inhaled_mass_ug': 25.0, 'id': 'm'},
+        {'duration_min': 45.0, 'distance_km': 25.0, 'inhaled_mass_ug': 15.0, 'id': 'c'}
+    ]
+    res = select_strategy_routes(candidates)
+    assert res['fastest']['duration_min'] == min(c['duration_min'] for c in candidates)
+    assert res['fastest']['id'] == 'f'
+    assert res['cleanest']['inhaled_mass_ug'] == min(c['inhaled_mass_ug'] for c in candidates)
+    assert res['cleanest']['id'] == 'c'
+
+def test_each_strategy_has_matching_selected_route_metrics():
+    candidates = [
+        {'duration_min': 28.6, 'distance_km': 22.4, 'inhaled_mass_ug': 28.7, 'id': 'r1'},
+        {'duration_min': 29.8, 'distance_km': 21.4, 'inhaled_mass_ug': 29.3, 'id': 'r2'},
+        {'duration_min': 34.8, 'distance_km': 26.4, 'inhaled_mass_ug': 30.1, 'id': 'r3'}
+    ]
+    res = select_strategy_routes(candidates)
+    # The metrics must correspond directly to candidate objects
+    assert res['fastest']['duration_min'] == 28.6
+    assert res['fastest']['distance_km'] == 22.4
+    assert res['fastest']['id'] in ['r1', 'r2', 'r3']
+    assert res['balanced']['id'] in ['r1', 'r2', 'r3']
+    assert res['cleanest']['id'] in ['r1', 'r2', 'r3']
+
+
