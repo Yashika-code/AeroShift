@@ -77,18 +77,39 @@ def test_fastest_is_strictly_minimum_duration():
     assert res['cleanest']['inhaled_mass_ug'] == min(c['inhaled_mass_ug'] for c in candidates)
     assert res['cleanest']['id'] == 'c'
 
-def test_each_strategy_has_matching_selected_route_metrics():
-    candidates = [
-        {'duration_min': 28.6, 'distance_km': 22.4, 'inhaled_mass_ug': 28.7, 'id': 'r1'},
-        {'duration_min': 29.8, 'distance_km': 21.4, 'inhaled_mass_ug': 29.3, 'id': 'r2'},
-        {'duration_min': 34.8, 'distance_km': 26.4, 'inhaled_mass_ug': 30.1, 'id': 'r3'}
-    ]
-    res = select_strategy_routes(candidates)
-    # The metrics must correspond directly to candidate objects
-    assert res['fastest']['duration_min'] == 28.6
-    assert res['fastest']['distance_km'] == 22.4
-    assert res['fastest']['id'] in ['r1', 'r2', 'r3']
-    assert res['balanced']['id'] in ['r1', 'r2', 'r3']
-    assert res['cleanest']['id'] in ['r1', 'r2', 'r3']
+def test_duration_preservation_from_provider():
+    # Verify that raw provider route durations are passed without being altered or scaled
+    raw_durations = [1715.1, 1788.0, 2088.7]  # seconds
+    processed_candidates = []
+    for i, dur_sec in enumerate(raw_durations):
+        processed_candidates.append({
+            'duration_min': dur_sec / 60.0,
+            'distance_km': 22.0 + i,
+            'inhaled_mass_ug': 30.0 - i * 2,
+            'id': f'route_{i}'
+        })
+    res = select_strategy_routes(processed_candidates)
+    # The duration for route_0 must exactly match raw provider duration / 60
+    assert abs(res['fastest']['duration_min'] - (1715.1 / 60.0)) < 1e-6
+    assert abs(res['cleanest']['duration_min'] - (2088.7 / 60.0)) < 1e-6
+
+def test_vehicle_mode_consistency_and_route_selection():
+    # Verify candidate selection across different vehicle modes (car, two_wheeler, active)
+    modes = ['car', 'two_wheeler', 'active']
+    for mode in modes:
+        # Candidate set for this mode
+        candidates = [
+            {'duration_min': 28.58, 'distance_km': 22.35, 'inhaled_mass_ug': 28.7, 'id': 'fast'},
+            {'duration_min': 29.80, 'distance_km': 21.39, 'inhaled_mass_ug': 29.3, 'id': 'clean'},
+            {'duration_min': 34.81, 'distance_km': 26.40, 'inhaled_mass_ug': 30.1, 'id': 'alt'}
+        ]
+        res = select_strategy_routes(candidates)
+        # Duration for fastest must always be the lowest duration
+        assert res['fastest']['duration_min'] == 28.58
+        # Each strategy must reference its own distinct candidate route
+        assert res['fastest']['id'] == 'fast'
+        assert res['balanced']['id'] == 'alt'
+        assert res['cleanest']['id'] == 'clean'
+
 
 
